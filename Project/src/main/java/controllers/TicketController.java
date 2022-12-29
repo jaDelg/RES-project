@@ -69,8 +69,7 @@ public class TicketController implements Controller {
 			if (user.getRole().equals("manager")) {
 				Ticket decisionTicket = ctx.bodyAsClass(Ticket.class);
 				//mainly what you want to take in here, is the ticket number and a status to update the ticket to
-				if (!decisionTicket.getAuthor().equals(user.getEmail())) {
-					ticketService.updateTicket(decisionTicket);
+				if (ticketService.updateTicket(decisionTicket, user.getEmail() )) {
 					ctx.status(202);//accepted
 				} else {
 					ctx.status(401);//unauthorized

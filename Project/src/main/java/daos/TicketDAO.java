@@ -51,8 +51,8 @@ public class TicketDAO {
 			statement.setString(index++, ticket.getDescription());
 			statement.setString(index++, user.getEmail());
 			statement.setString(index++, ticket.getrType());
-			//no need to add ticket number since that will be set by SQL
-			//no need to add a pending status either since sql will set it by default
+			// no need to add ticket number since that will be set by SQL
+			// no need to add a pending status either since sql will set it by default
 			statement.execute();
 
 		}
@@ -62,13 +62,14 @@ public class TicketDAO {
 
 		}
 	}
-	//returns the tickets for the current user (organized by status)
+
+	// returns the tickets for the current user (organized by status)
 	public List<Ticket> findTicketsByEmail(String email) {
 		try (Connection connection = ConnectionUtil.getConnection()) {
 			String sql = "SELECT * FROM tickets WHERE email = ? ORDER BY status";
 			PreparedStatement statement = connection.prepareStatement(sql);
 			statement.setString(1, email);
-			//worth checking if this works, otherwuse go back to the regular statement
+			// worth checking if this works, otherwise go back to the regular statement
 			ResultSet result = statement.executeQuery();
 
 			List<Ticket> list = new ArrayList<>();
@@ -123,26 +124,32 @@ public class TicketDAO {
 		}
 	}
 
-	
-	public boolean updateTicket(String decision, int ticketID) {
+	public boolean updateTicket(String decision, int ticketID, String updaterEmail) {
 		
 		try (Connection connection = ConnectionUtil.getConnection()) {
-			String sql = "UPDATE tickets set status=? where ticket_id=?";
+			String sqlcheck = "SELECT email FROM tickets WHERE ticket_id =" + ticketID + ";";
+			Statement statement = connection.createStatement();
+			ResultSet result = statement.executeQuery(sqlcheck);
 			
-			PreparedStatement statement = connection.prepareStatement(sql);
-			int index = 1;
-			statement.setString(index++, decision);
-			statement.setInt(index++, ticketID);
-			statement.execute();
 
+			if (result.next() && !result.getString("email").equals(updaterEmail)) {
+				String sql = "UPDATE tickets set status=? where ticket_id=?";
 
-			return true;
-
+				PreparedStatement pstatement = connection.prepareStatement(sql);
+				int index = 1;
+				pstatement.setString(index++, decision);
+				pstatement.setInt(index++, ticketID);
+				pstatement.setString(index, updaterEmail);
+				pstatement.execute();
+				return true;
+			}
+			else {
+				return false;
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
 
 	}
 }

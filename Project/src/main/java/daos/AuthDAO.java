@@ -24,9 +24,9 @@ public class AuthDAO {
 			//creates users from query results and adds them to a list. 
 			while (result.next()) {
 				User u = new User();
-				u.setEmail("email");
-				u.setPassword("password");
-				u.setRole("emp_role");
+				u.setEmail(result.getString("email"));
+				u.setPassword(result.getString("pass"));
+				u.setRole(result.getString("emp_role"));
 				list.add(u);
 
 			}

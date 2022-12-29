@@ -31,7 +31,7 @@ public class TicketService {
 	
 	
 	
-	public boolean updateTicket(Ticket ticket) {
-		return ticketDAO.updateTicket(ticket.getStatus(), ticket.getTicketNumber());
+	public boolean updateTicket(Ticket ticket, String updaterEmail) {
+		return ticketDAO.updateTicket(ticket.getStatus(), ticket.getTicketNumber(), updaterEmail);
 	}
 }

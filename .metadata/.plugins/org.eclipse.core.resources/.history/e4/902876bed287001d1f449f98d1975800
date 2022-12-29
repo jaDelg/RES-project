@@ -72,14 +72,14 @@ public class TicketController implements Controller {
 				if (ticketService.updateTicket(decisionTicket, user.getEmail() )) {
 					ctx.status(202);//accepted
 				} else {
-					ctx.status(400);//bad request
+					ctx.status(401);//unauthorized
 				}
 			} else {
-				ctx.status(401);//not authorized
+				ctx.status(401);
 			}
 
 		} else {
-			ctx.status(401);//not authorized
+			ctx.status(401);
 		}
 	};
 

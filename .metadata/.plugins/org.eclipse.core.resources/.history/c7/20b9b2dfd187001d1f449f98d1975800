@@ -127,13 +127,12 @@ public class TicketDAO {
 	public boolean updateTicket(String decision, int ticketID, String updaterEmail) {
 		
 		try (Connection connection = ConnectionUtil.getConnection()) {
-			//here we make sure that the ticket exists  and has a pending status 
-			String sqlcheck = "SELECT email FROM tickets WHERE ticket_id =" + ticketID + " AND status ='pending';";
+			String sqlcheck = "SELECT email FROM tickets WHERE ticket_id =" + ticketID + ";";
 			Statement statement = connection.createStatement();
 			ResultSet result = statement.executeQuery(sqlcheck);
 			
-			
-			if (result.next() && !result.getString("email").equals(updaterEmail)) {
+			result.next();
+			if (!result.getString("email").equals(updaterEmail)) {
 				String sql = "UPDATE tickets set status=? where ticket_id=?";
 				
 				PreparedStatement pstatement = connection.prepareStatement(sql);

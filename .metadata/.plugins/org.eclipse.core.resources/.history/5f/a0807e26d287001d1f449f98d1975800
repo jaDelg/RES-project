@@ -132,8 +132,8 @@ public class TicketDAO {
 			Statement statement = connection.createStatement();
 			ResultSet result = statement.executeQuery(sqlcheck);
 			
-			
-			if (result.next() && !result.getString("email").equals(updaterEmail)) {
+			result.next();
+			if (!result.getString("email").equals(updaterEmail)) {
 				String sql = "UPDATE tickets set status=? where ticket_id=?";
 				
 				PreparedStatement pstatement = connection.prepareStatement(sql);

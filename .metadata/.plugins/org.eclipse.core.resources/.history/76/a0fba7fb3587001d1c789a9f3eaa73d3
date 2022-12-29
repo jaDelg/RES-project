@@ -1,0 +1,168 @@
+package daos;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import models.Ticket;
+import models.User;
+import utils.ConnectionUtil;
+
+public class TicketDAO {
+	public List<Ticket> getAllTickets() {
+		try (Connection connection = ConnectionUtil.getConnection()) {
+			String sql = "SELECT * From tickets;";
+			Statement statement = connection.createStatement();
+			ResultSet result = statement.executeQuery(sql);
+
+			List<Ticket> list = new ArrayList<>();
+
+			while (result.next()) {
+				Ticket t = new Ticket();
+				t.setAmount(result.getDouble("amount"));
+				t.setAuthor(result.getString("email"));
+				t.setDescription(result.getString("description"));
+				t.setrType(result.getString("reinType"));
+				t.setStatus(result.getString("status"));
+
+				list.add(t);
+
+			}
+
+			return list;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public void addTicket(Ticket ticket, User user) {
+		try (Connection connection = ConnectionUtil.getConnection()) {
+			String sql = "INSERT INTO tickets (amount, description, status, email, reintype ) VALUES (?,?,?,?,?);";
+			PreparedStatement statement = connection.prepareStatement(sql);
+			int index = 1;
+			statement.setDouble(index++, ticket.getAmount());
+			statement.setString(index++, ticket.getDescription());
+			statement.setString(index++, "pending");
+			statement.setString(index++, user.getEmail());
+			statement.setString(index++, ticket.getrType());
+			statement.execute();
+
+		}
+
+		catch (SQLException e) {
+			e.printStackTrace();
+
+		}
+	}
+
+	
+
+	public List<Ticket> findTicketsByEmail(String email) {
+		try (Connection connection = ConnectionUtil.getConnection()) {
+			String sql = "SELECT * FROM tickets WHERE email = '" + email + "' ORDER BY status;";
+			// should probably change this to a prepared statement since a faulty email can
+			// be made i guess when registering, though that can be
+			// remedied by making sure that a email format is used when registering.-look
+			// into that.
+
+			Statement statement = connection.createStatement();
+			ResultSet result = statement.executeQuery(sql);
+
+			List<Ticket> list = new ArrayList<>();
+			while (result.next()) {
+				//the result.get___() take in names for the columns.
+				Ticket t = new Ticket();
+				t.setAmount(result.getDouble("amount"));
+				t.setAuthor(email);
+				t.setDescription( result.getString("description"));
+				t.setrType(result.getString("reinType"));
+				t.setStatus(result.getString("status"));
+
+				list.add(t);
+
+			}
+
+			return list;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	public List<Ticket> findFilteredTickets(String email, String filter) {
+		try (Connection connection = ConnectionUtil.getConnection()) {
+			String sql = "SELECT * FROM tickets WHERE email = '" + email + "' AND reintype= '"+filter+"' ORDER BY status;";
+			// should probably change this to a prepared statement since a faulty email can
+			// be made i guess when registering, though that can be
+			// remedied by making sure that a email format is used when registering.-look
+			// into that.
+
+			Statement statement = connection.createStatement();
+			ResultSet result = statement.executeQuery(sql);
+
+
+			List<Ticket> list = new ArrayList<>();
+			while (result.next()) {
+				
+				Ticket t = new Ticket(result.getDouble("amount"), result.getString("description"), email, result.getString("reintype"));
+
+				t.setStatus(result.getString("status"));
+
+				list.add(t);
+
+			}
+
+			return list;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	
+
+	// go back and check this for only the first instance of meeting the criteria
+	// might need to pas through the current manager email to make sure that those
+	// managers can't
+	// approve their own tickets
+	public boolean updateTicket(Ticket decision) {
+		List<Ticket> list = getAllTickets();
+		for (Ticket ticket : list) {
+			// here the tickets are the same if they share the same maker, amount, and
+			// description.
+			if (decision.equals(ticket) && ticket.getStatus().equals("pending")) {//check that there's a matching ticket to what was posted
+				try (Connection connection = ConnectionUtil.getConnection()) {
+					
+					//below is a long sql statement that:
+					//updates the first instance of a ticket with the amount, description and email that the user
+					//inputs. If multiple similar tickets are made then, only the earliest made gets affected.
+					String sql = "UPDATE tickets SET status = ? WHERE id=(SELECT id FROM tickets WHERE  (amount =? AND description = ? AND email= ? AND status = 'pending' AND reinType=?) LIMIT 1);";//update the status of that ticket
+					//might not need a prepared statement here if the tickets are checked to be okay instead.
+					
+					PreparedStatement statement = connection.prepareStatement(sql);
+					statement.setString(1, decision.getStatus());
+					statement.setDouble(2, decision.getAmount());
+					statement.setString(3,decision.getDescription());
+					statement.setString(4, decision.getAuthor());
+					statement.setString(5, decision.getrType());
+					statement.execute();
+
+					return true;
+				} catch (SQLException e) {
+					e.printStackTrace();
+					return false;
+				}
+			}
+		}
+
+		return false;
+
+	}
+}

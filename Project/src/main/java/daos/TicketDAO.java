@@ -65,9 +65,11 @@ public class TicketDAO {
 	//returns the tickets for the current user (organized by status)
 	public List<Ticket> findTicketsByEmail(String email) {
 		try (Connection connection = ConnectionUtil.getConnection()) {
-			String sql = "SELECT * FROM tickets WHERE email = '" + email + "' ORDER BY status;";
-			Statement statement = connection.createStatement();
-			ResultSet result = statement.executeQuery(sql);
+			String sql = "SELECT * FROM tickets WHERE email = ? ORDER BY status";
+			PreparedStatement statement = connection.prepareStatement(sql);
+			statement.setString(1, email);
+			//worth checking if this works, otherwuse go back to the regular statement
+			ResultSet result = statement.executeQuery();
 
 			List<Ticket> list = new ArrayList<>();
 			while (result.next()) {

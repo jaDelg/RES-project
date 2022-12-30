@@ -18,8 +18,6 @@ public class LoginController implements Controller {
 		if (attempt!=null ) {
 			HttpSession session = ctx.req().getSession();
 			session.setAttribute("user", attempt);
-			//commented out because I decided to do filters with url instead
-			//session.setAttribute("filter", "clear");
 			ctx.json("Login successful. Logged on to: "+attempt.getEmail());
 			ctx.status(200);//ok
 			

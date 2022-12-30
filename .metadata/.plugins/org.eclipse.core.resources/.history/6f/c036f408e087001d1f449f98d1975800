@@ -13,10 +13,6 @@ public class TicketService {
 		return ticketDAO.getAllTickets();
 	}
 	
-	public List<Ticket> getTickets(String filter){
-		return ticketDAO.getAllTickets(filter);
-	}
-	
 	public void addTicket(Ticket ticket, User user) {
 		ticketDAO.addTicket(ticket, user);
 		// here i have to add a ticket to the current user

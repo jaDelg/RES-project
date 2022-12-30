@@ -40,35 +40,6 @@ public class TicketDAO {
 			return null;
 		}
 	}
-	
-	public List<Ticket> getAllTickets(String filter) {
-		try (Connection connection = ConnectionUtil.getConnection()) {
-			String sql = "SELECT * From tickets WHERE reintype=?;";
-			PreparedStatement statement = connection.prepareStatement(sql);
-			statement.setString(1, filter);
-			
-			List<Ticket> list = new ArrayList<>();
-			ResultSet result = statement.executeQuery();
-			
-			while (result.next()) {
-				Ticket t = new Ticket();
-				t.setAmount(result.getDouble("amount"));
-				t.setAuthor(result.getString("email"));
-				t.setDescription(result.getString("description"));
-				t.setrType(result.getString("reintype"));
-				t.setStatus(result.getString("status"));
-				t.setTicketNumber(result.getInt("ticket_id"));
-				list.add(t);
-
-			}
-
-			return list;
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 
 	// adds ticket and sets status to pending.
 	public void addTicket(Ticket ticket, User user) {
@@ -125,12 +96,11 @@ public class TicketDAO {
 	// this might be able to be used for a filtered list
 	public List<Ticket> findFilteredTickets(String email, String filter) {
 		try (Connection connection = ConnectionUtil.getConnection()) {
-			String sql = "SELECT * FROM tickets WHERE email = ? AND reintype= ? ORDER BY status;";
-			PreparedStatement statement = connection.prepareStatement(sql);
-			statement.setString(1, email);
-			statement.setString(2, filter);
-			ResultSet result = statement.executeQuery();
+			String sql = "SELECT * FROM tickets WHERE email = '" + email + "' AND reintype= '" + filter
+					+ "' ORDER BY status;";
 
+			Statement statement = connection.createStatement();
+			ResultSet result = statement.executeQuery(sql);
 
 			List<Ticket> list = new ArrayList<>();
 			while (result.next()) {

@@ -98,31 +98,10 @@ public class TicketController implements Controller {
 		}
 
 	};
-	
-	Handler getAllTicketswithFilter = (ctx) -> {
-		HttpSession session = ctx.req().getSession(false);
-		if (session != null) {
-			User user = (User) session.getAttribute("user");
-			// checks to see if user is a manager(Only managers can see all tickets)
-			if (user.getRole().equals("manager")) {
-				String filterString = ctx.pathParam("filter");
-				List<Ticket> list = ticketService.getTickets(filterString);
-				ctx.json(list);
-				ctx.status(200);// ok
-			} else {
-				ctx.status(401);// unauthorized
-			}
-
-		} else {
-			ctx.status(401);
-		}
-
-	};
 
 	@Override
 	public void addRoutes(Javalin app) {
 		app.get("/tickets", getAllTickets);
-		app.get("/tickets/{filter}", getAllTicketswithFilter);
 		app.get("/mytickets", getTicketByUser);
 		app.get("/mytickets/{filter}", getTicketwithFilter);
 		app.post("/mytickets", addTicket);
